@@ -1,6 +1,7 @@
 L Systems
 ---------
 
-A. Lindenmayer's grammar for simulating the growth patterns of plants!
+A. Lindenmayer's grammar for simulating the growth patterns of plants! Plus
+turtle graphics for drawing.
 
-Implementations in both Python and Haskell.
+This is the Python branch - LSystem string generation only.
