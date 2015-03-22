@@ -12,6 +12,11 @@ class Turtle
     @pos = Pos.new(0, 0)
     @direction = 0
     @stack = []
+    @repeat = true
+  end
+
+  def stop_after_done!
+    @repeat = false
   end
 
   def position
@@ -60,15 +65,24 @@ class Turtle
     self
   end
 
+  def halt
+    @halt = true
+  end
+
   def exec s
-    self.send *@rules[s]
+    self.send(*@rules[s])
     self
   end
 
   def step
-    exec(@str[@current_index])
-    @current_index = ( @current_index + 1 ) % @str.length
-    self
+    unless @halt
+      exec(@str[@current_index])
+      self.halt if ( @current_index + 1 ) >= @str.length
+      @current_index = ( @current_index + 1 ) % @str.length
+      self
+    else
+      self
+    end
   end
 
 end

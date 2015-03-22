@@ -60,7 +60,7 @@ class TurtleTest < MiniTest::Spec
     @turtle.drawing.must_equal false
   end
 
-  def test_turtle_step_causes_methodcall
+  def test_turtle_step_wraps_around
     s = "AB"
     @turtle = Turtle.new s, "A" => :pen_up, "B" => :pen_down
     @turtle.step
@@ -100,6 +100,14 @@ class TurtleTest < MiniTest::Spec
     @turtle.direction.must_equal 60
     @turtle.step.step.step
     @turtle.direction.must_equal (-60)
+  end
+
+  def test_halt_after_done_flag
+    s = "111111"
+    @turtle = Turtle.new s, "1" => :forward
+    @turtle.stop_after_done!
+    @turtle.step.step.step.step.step.step.step.step
+    @turtle.position.must_equal Pos.new(6, 0)
   end
 
 end
