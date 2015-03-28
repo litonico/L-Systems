@@ -25,7 +25,8 @@ class TurtleWindow < Gosu::Window
     @turtle.step
     @pos = Pos.new(@turtle.position.x*100+@offset.x,
                    @turtle.position.y*100+@offset.y) # Y-axis is flipped
-    # if the stack changed, the turtle jumps to a new position
+    # If the stack changed, the turtle jumps to a new position,
+    # and no line is drawn
     if stack != @turtle.stack
       @prev_pos = @pos
     end
@@ -55,8 +56,8 @@ class TurtleWindow < Gosu::Window
   def draw
     draw_background W
     @lines.each do |line|
-      draw_line(line.start.x, line.start.y, B,
-                line.fin.x, line.fin.y, B)
+      draw_fat_line(7, line.start.x, line.start.y, B,
+                    line.fin.x, line.fin.y, B)
     end
     draw_turtle_string_location
   end
@@ -68,9 +69,19 @@ class TurtleWindow < Gosu::Window
 
 end
 
-def draw_fat_line x1, y1, c1,
+def draw_fat_line thickness,
+                  x1, y1, c1,
                   x2, y2, c2,
                   z = 0, mode = :default
+  t = thickness/2
+  distance = Math.sqrt((x1-x2)**2 + (y2 - y1)**2)
+  dx = (y2-y1)/distance * t
+  dy = (x2-x1)/distance * t * -1
+  draw_quad(x1+dx, y1+dy, c1,
+            x1-dx, y1-dy, c1,
+            x2+dx, y2+dy, c2,
+            x2-dx, y2-dy, c2,
+            z, mode)
 end
 
 def draw_circle px, py, radius, color, steps=16
@@ -86,7 +97,7 @@ end
 s = "11.[1.[0,]0,]1.[0,]0"
 turtle = Turtle.new s, "1" => :forward,
                        "0" => :forward,
-                       # due to dumb y-axis stuff, screen-left
+                       # Due to dumb y-axis stuff, screen-left
                        # is *actual* right. We're doing this for
                        # looks, not correctness.
                        "[" => [:right, 45],
