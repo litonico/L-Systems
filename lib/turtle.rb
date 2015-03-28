@@ -3,7 +3,7 @@ require 'gosu'
 Pos = Struct.new(:x, :y)
 
 class Turtle
-  attr_reader :current_index, :pos, :direction, :drawing, :stack
+  attr_reader :current_index, :pos, :direction, :drawing, :stack, :str
   def initialize str, rules
     @str = str
     @rules = rules
