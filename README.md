@@ -6,3 +6,8 @@ turtle graphics for drawing.
 
 Implementations in Python and Haskell too,
 each in their own branch.
+
+- run `rake examples`
+- hold space
+- hit `ESC` when an example is complete!
+
