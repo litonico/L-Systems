@@ -1,19 +1,16 @@
-require "gosu"
-require "../lib/turtle"
+require "graphics"
+require "./lib/turtle"
 
 Line = Struct.new :start, :fin
 
-class TurtleWindow < Gosu::Window
-  W = Gosu::Color::WHITE
-  B = Gosu::Color::BLACK
+class TurtleSimulation < Graphics::Simulation
+  WINSIZE = 800
+  attr_accessor :simulation
 
-  def initialize turtle, winsize
-    super winsize, winsize, false, 66.6
-    self.caption = "Turtle Graphics"
+  def initialize turtle
+    super WINSIZE, WINSIZE, 16, "Turtle Graphics"
     @turtle = turtle
-    @winsize = winsize
-    @dt = 0
-    @offset = Pos.new(winsize/2, winsize/2+100)
+    @offset = Pos.new(WINSIZE/2, WINSIZE/2-100)
     @pos = @offset
     @prev_pos = @pos
     @lines = []
@@ -24,7 +21,7 @@ class TurtleWindow < Gosu::Window
     stack = @turtle.stack.clone
     @turtle.step
     @pos = Pos.new(@turtle.position.x*100+@offset.x,
-                   @turtle.position.y*100+@offset.y) # Y-axis is flipped
+                   @turtle.position.y*100+@offset.y)
     # If the stack changed, the turtle jumps to a new position,
     # and no line is drawn
     if stack != @turtle.stack
@@ -32,80 +29,54 @@ class TurtleWindow < Gosu::Window
     end
   end
 
-  def draw_turtle_string_location
-    font = Gosu::Font.new(self, "monaco", 50)
-    font.draw(@turtle.str, 30, 10, 0, 1, 1, B)
-    arrow = " "*@turtle.current_index + "\u2191"
-    font.draw(arrow, 4, 55, 0, 1, 1, Gosu::Color::RED)
-  end
-
-  def draw_background color
-    draw_quad(0, 0, color,
-              0, @winsize, color,
-              @winsize, 0, color,
-              @winsize, @winsize, color)
-  end
-
-  def update
+  def update dt
     unless @prev_pos == @pos
       @lines << Line.new(@prev_pos, @pos)
     end
-    @dt += 1
   end
 
-  def draw
-    draw_background W
+  def draw dt
+    clear :white
     @lines.each do |line|
-      draw_fat_line(7, line.start.x, line.start.y, B,
-                    line.fin.x, line.fin.y, B)
+      fat_line(7, line.start.x, line.start.y,
+                  line.fin.x, line.fin.y, :black)
     end
-    draw_turtle_string_location
   end
 
-  def button_down id
-    close if id == Gosu::KbEscape
-    self.turtle_step if id == Gosu::KbSpace
-  end
+  def initialize_keys
+    super
 
+    add_key_handler(:SPACE) {
+      turtle_step
+    }
+  end
 end
 
-def draw_fat_line thickness,
-                  x1, y1, c1,
-                  x2, y2, c2,
-                  z = 0, mode = :default
+def fat_line thickness, x1, y1, x2, y2, color
   t = thickness/2
   distance = Math.sqrt((x1-x2)**2 + (y2 - y1)**2)
   dx = (y2-y1)/distance * t
   dy = (x2-x1)/distance * t * -1
-  draw_quad(x1+dx, y1+dy, c1,
-            x1-dx, y1-dy, c1,
-            x2+dx, y2+dy, c2,
-            x2-dx, y2-dy, c2,
-            z, mode)
+  points = [
+    [x1+dx, y1+dy],
+    [x2+dx, y2+dy],
+    [x2-dx, y2-dy],
+    [x1-dx, y1-dy]
+  ]
+  polygon(*points, color)
 end
 
-def draw_circle px, py, radius, color, steps=16
-  dd = 2*Math::PI/steps
-  (0..2*Math::PI).step(dd).each do |d|
-    draw_triangle(px, py, color,
-                  px+Math.cos(d)*radius, py+Math.sin(d)*radius, color,
-                  px+Math.cos(d+dd)*radius, py+Math.sin(d+dd)*radius, color)
-  end
+if __FILE__ == $0
+  s = "11.[1.[0,]0,]1.[0,]0"
+  turtle = Turtle.new s,
+    "1" => :forward,
+    "0" => :forward,
+    "[" => [:left, 45],
+    "]" => [:right, 45],
+    "." => :push,
+    "," => :pop
+  turtle.send(:left, 90) # Get pointed in the right direction
+  turtle.stop_after_done!
+
+  TurtleSimulation.new(turtle).run
 end
-
-
-s = "11.[1.[0,]0,]1.[0,]0"
-turtle = Turtle.new s, "1" => :forward,
-                       "0" => :forward,
-                       # Due to dumb y-axis stuff, screen-left
-                       # is *actual* right. We're doing this for
-                       # looks, not correctness.
-                       "[" => [:right, 45],
-                       "]" => [:left, 45],
-                       "." => :push,
-                       "," => :pop
-turtle.send(:left, -90) # Get pointed in the right direction
-turtle.stop_after_done!
-
-window = TurtleWindow.new turtle, 800
-window.show

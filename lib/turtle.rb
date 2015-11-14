@@ -1,5 +1,3 @@
-require 'gosu'
-
 Pos = Struct.new(:x, :y)
 
 class Turtle
@@ -30,6 +28,10 @@ class Turtle
 
   def pen_down
     @drawing = true
+    self
+  end
+
+  def nop
     self
   end
 
@@ -67,6 +69,7 @@ class Turtle
 
   def halt
     @halt = true
+    self
   end
 
   def exec s
@@ -77,9 +80,12 @@ class Turtle
   def step
     unless @halt
       exec(@str[@current_index])
-      self.halt if ( @current_index + 1 ) >= @str.length
-      @current_index = ( @current_index + 1 ) % @str.length
-      self
+      if ( @current_index + 1 ) >= @str.length && !@repeat
+        self.halt
+      else
+        @current_index = ( @current_index + 1 ) % @str.length
+        self
+      end
     else
       self
     end
